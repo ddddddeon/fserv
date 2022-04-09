@@ -77,13 +77,17 @@ func main() {
 	token := generateToken()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		status := http.StatusOK
 		t := r.URL.Query().Get("t")
 
 		if r.URL.Path == "/" && t != token {
-			http.Error(w, "Invalid token", http.StatusForbidden)
-			return
+			status = http.StatusForbidden
+			http.Error(w, "Invalid token", status)
+		} else {
+			http.ServeFile(w, r, dirPath+r.URL.Path)
 		}
-		http.ServeFile(w, r, dirPath+r.URL.Path)
+
+		fmt.Printf("%s %s %d\n", r.Method, r.URL.String(), status)
 	})
 
 	fmt.Printf("Serving %s on http://0.0.0.0:%s?t=%s\n", dirPath, port, token)
